@@ -52,7 +52,7 @@ contract Project is Roles {
     /**
      * @notice Transfers tokens held by contract to beneficiary.
      */
-    function release() public {
+    function release() public onlyOperator {
         // solhint-disable-next-line not-rely-on-time
         require(block.timestamp >= _releaseTime, "Project: current time is before release time");
 
