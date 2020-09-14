@@ -6,7 +6,7 @@ const { expect } = require('chai');
 const ERC20Mock = artifacts.require('ERC20Mock');
 const Project = artifacts.require('Project');
 
-contract('Project', function ([tokenHolder, admin, operator, beneficiary, thirdParty]) {
+contract('Project', function ([tokenHolder, admin, operator, beneficiary, recovery, thirdParty]) {
   const OPERATOR_ROLE = web3.utils.soliditySha3('OPERATOR');
 
   const name = 'TestToken';
@@ -22,22 +22,29 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, thirdP
 
     it('rejects an empty token', async function () {
       await expectRevert(
-        Project.new(ZERO_ADDRESS, beneficiary, this.releaseTime),
+        Project.new(ZERO_ADDRESS, beneficiary, recovery, this.releaseTime),
         'Project: token is the zero address',
       );
     });
 
     it('rejects an empty beneficiary', async function () {
       await expectRevert(
-        Project.new(this.token.address, ZERO_ADDRESS, this.releaseTime),
+        Project.new(this.token.address, ZERO_ADDRESS, recovery, this.releaseTime),
         'Project: beneficiary is the zero address',
+      );
+    });
+
+    it('rejects an empty recovery', async function () {
+      await expectRevert(
+        Project.new(this.token.address, beneficiary, ZERO_ADDRESS, this.releaseTime),
+        'Project: recovery is the zero address',
       );
     });
 
     it('rejects a release time in the past', async function () {
       const pastReleaseTime = (await time.latest()).sub(time.duration.years(1));
       await expectRevert(
-        Project.new(this.token.address, beneficiary, pastReleaseTime),
+        Project.new(this.token.address, beneficiary, recovery, pastReleaseTime),
         'Project: release time is before current time',
       );
     });
@@ -47,6 +54,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, thirdP
         this.contract = await Project.new(
           this.token.address,
           beneficiary,
+          recovery,
           this.releaseTime,
           { from: admin },
         );
@@ -57,6 +65,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, thirdP
       it('can get state', async function () {
         expect(await this.contract.token()).to.equal(this.token.address);
         expect(await this.contract.beneficiary()).to.equal(beneficiary);
+        expect(await this.contract.recovery()).to.equal(recovery);
         expect(await this.contract.releaseTime()).to.be.bignumber.equal(this.releaseTime);
       });
 
