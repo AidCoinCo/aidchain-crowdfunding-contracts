@@ -16,27 +16,29 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
   context('creating valid contract', function () {
     beforeEach(async function () {
       this.releaseTime = (await time.latest()).add(time.duration.years(1));
+      this.releasePercent = new BN(70);
+      this.expectedAmount = amount.mul(this.releasePercent).div(new BN(100));
 
       this.token = await ERC20Mock.new(name, symbol, tokenHolder, amount, { from: tokenHolder });
     });
 
     it('rejects an empty token', async function () {
       await expectRevert(
-        Project.new(ZERO_ADDRESS, beneficiary, recovery, this.releaseTime),
+        Project.new(ZERO_ADDRESS, beneficiary, recovery, this.releaseTime, this.releasePercent),
         'Project: token is the zero address',
       );
     });
 
     it('rejects an empty beneficiary', async function () {
       await expectRevert(
-        Project.new(this.token.address, ZERO_ADDRESS, recovery, this.releaseTime),
+        Project.new(this.token.address, ZERO_ADDRESS, recovery, this.releaseTime, this.releasePercent),
         'Project: beneficiary is the zero address',
       );
     });
 
     it('rejects an empty recovery', async function () {
       await expectRevert(
-        Project.new(this.token.address, beneficiary, ZERO_ADDRESS, this.releaseTime),
+        Project.new(this.token.address, beneficiary, ZERO_ADDRESS, this.releaseTime, this.releasePercent),
         'Project: recovery is the zero address',
       );
     });
@@ -44,8 +46,15 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
     it('rejects a release time in the past', async function () {
       const pastReleaseTime = (await time.latest()).sub(time.duration.years(1));
       await expectRevert(
-        Project.new(this.token.address, beneficiary, recovery, pastReleaseTime),
+        Project.new(this.token.address, beneficiary, recovery, pastReleaseTime, this.releasePercent),
         'Project: release time is before current time',
+      );
+    });
+
+    it('rejects invalid percent', async function () {
+      await expectRevert(
+        Project.new(this.token.address, beneficiary, recovery, this.releaseTime, 200),
+        'Project: release percent is more than 100',
       );
     });
 
@@ -56,6 +65,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
           beneficiary,
           recovery,
           this.releaseTime,
+          this.releasePercent,
           { from: admin },
         );
       });
@@ -98,7 +108,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
             await this.contract.release({ from: operator });
 
             expect(await this.contract.released()).to.be.equal(true);
-            expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(amount);
+            expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(this.expectedAmount);
           });
 
           it('can be released after time limit', async function () {
@@ -106,14 +116,14 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
             await this.contract.release({ from: operator });
 
             expect(await this.contract.released()).to.be.equal(true);
-            expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(amount);
+            expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(this.expectedAmount);
           });
 
           it('cannot be released twice', async function () {
             await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
             await this.contract.release({ from: operator });
             await expectRevert(this.contract.release({ from: operator }), 'Project: already released');
-            expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(amount);
+            expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(this.expectedAmount);
           });
         });
 

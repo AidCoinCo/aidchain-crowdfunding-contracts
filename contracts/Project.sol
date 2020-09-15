@@ -9,6 +9,7 @@ import "./access/Roles.sol";
 
 contract Project is Roles, ReentrancyGuard {
     using SafeERC20 for IERC20;
+    using SafeMath for uint256;
 
     // ERC20 basic token contract being held
     IERC20 private _token;
@@ -22,6 +23,9 @@ contract Project is Roles, ReentrancyGuard {
     // timestamp when token release is enabled
     uint256 private _releaseTime;
 
+    // percent of funds to be released first
+    uint256 private _releasePercent;
+
     // defines if funds have been already released or not
     bool private _released = false;
 
@@ -29,17 +33,20 @@ contract Project is Roles, ReentrancyGuard {
         IERC20 token,
         address beneficiary,
         address recovery,
-        uint256 releaseTime
+        uint256 releaseTime,
+        uint256 releasePercent
     ) {
         require(address(token) != address(0), "Project: token is the zero address");
         require(beneficiary != address(0), "Project: beneficiary is the zero address");
         require(recovery != address(0), "Project: recovery is the zero address");
         require(releaseTime > block.timestamp, "Project: release time is before current time"); // solhint-disable-line not-rely-on-time
+        require(releasePercent <= 100, "Project: release percent is more than 100");
 
         _token = token;
         _beneficiary = beneficiary;
         _recovery = recovery;
         _releaseTime = releaseTime;
+        _releasePercent = releasePercent;
     }
 
     /**
@@ -83,10 +90,9 @@ contract Project is Roles, ReentrancyGuard {
     function release() public onlyOperator nonReentrant {
         // solhint-disable-next-line not-rely-on-time
         require(block.timestamp >= _releaseTime, "Project: current time is before release time");
-
         require(_released == false, "Project: already released");
 
-        uint256 amount = _token.balanceOf(address(this));
+        uint256 amount = _token.balanceOf(address(this)).mul(_releasePercent).div(100);
         require(amount > 0, "Project: no tokens to release");
 
         _token.safeTransfer(_beneficiary, amount);
