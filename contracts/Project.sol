@@ -88,8 +88,7 @@ contract Project is Roles, ReentrancyGuard {
      * @notice Transfers tokens held by contract to beneficiary.
      */
     function release() public onlyOperator nonReentrant {
-        // solhint-disable-next-line not-rely-on-time
-        require(block.timestamp >= _releaseTime, "Project: current time is before release time");
+        require(block.timestamp >= _releaseTime, "Project: current time is before release time"); // solhint-disable-line not-rely-on-time
         require(_released == false, "Project: already released");
 
         uint256 amount = _token.balanceOf(address(this)).mul(_releasePercent).div(100);
