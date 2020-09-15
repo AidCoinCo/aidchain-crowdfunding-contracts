@@ -99,4 +99,17 @@ contract Project is Roles, ReentrancyGuard {
 
         _released = true;
     }
+
+    /**
+     * @notice Recover tokens held by contract to recovery.
+     * @param tokenAddress The token contract address
+     */
+    function recover(IERC20 tokenAddress) public onlyOperator nonReentrant {
+        require(_released == true, "Project: not already released");
+
+        uint256 amount = tokenAddress.balanceOf(address(this));
+        require(amount > 0, "Project: no tokens to recover");
+
+        tokenAddress.safeTransfer(_recovery, amount);
+    }
 }

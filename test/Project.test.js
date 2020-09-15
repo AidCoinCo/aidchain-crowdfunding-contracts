@@ -68,6 +68,8 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
           this.releasePercent,
           { from: admin },
         );
+
+        await this.contract.grantRole(OPERATOR_ROLE, operator, { from: admin });
       });
 
       it('can get state', async function () {
@@ -84,66 +86,102 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
         });
 
         describe('if caller has the OPERATOR role', function () {
-          beforeEach(async function () {
-            await this.contract.grantRole(OPERATOR_ROLE, operator, { from: admin });
-          });
+          context('check release', function () {
+            it('cannot be released before time limit', async function () {
+              await expectRevert(
+                this.contract.release({ from: operator }),
+                'Project: current time is before release time',
+              );
+            });
 
-          it('cannot be released before time limit', async function () {
-            await expectRevert(
-              this.contract.release({ from: operator }),
-              'Project: current time is before release time',
-            );
-          });
+            it('cannot be released just before time limit', async function () {
+              await time.increaseTo(this.releaseTime.sub(time.duration.seconds(3)));
+              await expectRevert(
+                this.contract.release({ from: operator }),
+                'Project: current time is before release time',
+              );
+            });
 
-          it('cannot be released just before time limit', async function () {
-            await time.increaseTo(this.releaseTime.sub(time.duration.seconds(3)));
-            await expectRevert(
-              this.contract.release({ from: operator }),
-              'Project: current time is before release time',
-            );
-          });
+            it('can be released just after limit', async function () {
+              await time.increaseTo(this.releaseTime.add(time.duration.seconds(1)));
+              await this.contract.release({ from: operator });
 
-          it('can be released just after limit', async function () {
-            await time.increaseTo(this.releaseTime.add(time.duration.seconds(1)));
-            await this.contract.release({ from: operator });
+              expect(await this.contract.released()).to.be.equal(true);
+              expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(this.expectedAmount);
+            });
 
-            expect(await this.contract.released()).to.be.equal(true);
-            expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(this.expectedAmount);
-          });
+            it('can be released after time limit', async function () {
+              await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
+              await this.contract.release({ from: operator });
 
-          it('can be released after time limit', async function () {
-            await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
-            await this.contract.release({ from: operator });
+              expect(await this.contract.released()).to.be.equal(true);
+              expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(this.expectedAmount);
+            });
 
-            expect(await this.contract.released()).to.be.equal(true);
-            expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(this.expectedAmount);
-          });
+            it('cannot be released twice', async function () {
+              await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
+              await this.contract.release({ from: operator });
+              await expectRevert(this.contract.release({ from: operator }), 'Project: already released');
+              expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(this.expectedAmount);
+            });
 
-          it('cannot be released twice', async function () {
-            await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
-            await this.contract.release({ from: operator });
-            await expectRevert(this.contract.release({ from: operator }), 'Project: already released');
-            expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(this.expectedAmount);
+            context('check recover', function () {
+              describe('if not released', function () {
+                it('cannot be recovered', async function () {
+                  await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
+                  await expectRevert(
+                    this.contract.recover(this.token.address, { from: operator }),
+                    'Project: not already released',
+                  );
+                });
+              });
+
+              describe('if released', function () {
+                beforeEach(async function () {
+                  await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
+                  await this.contract.release({ from: operator });
+                });
+
+                it('can be recovered', async function () {
+                  await this.contract.recover(this.token.address, { from: operator });
+                  expect(await this.token.balanceOf(recovery)).to.be.bignumber.equal(amount.sub(this.expectedAmount));
+                });
+              });
+            });
           });
         });
 
         describe('if caller has not the OPERATOR role', function () {
-          it('cannot be ever released', async function () {
-            await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
-            await expectRevert(
-              this.contract.release({ from: thirdParty }),
-              'Roles: caller does not have the OPERATOR role',
-            );
+          context('check release', function () {
+            it('cannot be ever released', async function () {
+              await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
+              await expectRevert(
+                this.contract.release({ from: thirdParty }),
+                'Roles: caller does not have the OPERATOR role',
+              );
+            });
+
+            context('check recover', function () {
+              describe('if released', function () {
+                beforeEach(async function () {
+                  await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
+                  await this.contract.release({ from: operator });
+                });
+
+                it('cannot be ever recovered', async function () {
+                  await expectRevert(
+                    this.contract.recover(this.token.address, { from: thirdParty }),
+                    'Roles: caller does not have the OPERATOR role',
+                  );
+                });
+              });
+            });
           });
         });
       });
 
       context('without tokens', function () {
         describe('if caller has the OPERATOR role', function () {
-          beforeEach(async function () {
-            await this.contract.grantRole(OPERATOR_ROLE, operator, { from: admin });
-          });
-
           it('cannot be released', async function () {
             await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
             await expectRevert(this.contract.release({ from: operator }), 'Project: no tokens to release');
