@@ -3,10 +3,11 @@
 pragma solidity ^0.7.1;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import "./access/Roles.sol";
 
-contract Project is Roles {
+contract Project is Roles, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     // ERC20 basic token contract being held
@@ -20,6 +21,9 @@ contract Project is Roles {
 
     // timestamp when token release is enabled
     uint256 private _releaseTime;
+
+    // defines if funds have been already released or not
+    bool private _released = false;
 
     constructor (
         IERC20 token,
@@ -67,15 +71,26 @@ contract Project is Roles {
     }
 
     /**
+     * @return the release status.
+     */
+    function released() public view returns (bool) {
+        return _released;
+    }
+
+    /**
      * @notice Transfers tokens held by contract to beneficiary.
      */
-    function release() public onlyOperator {
+    function release() public onlyOperator nonReentrant {
         // solhint-disable-next-line not-rely-on-time
         require(block.timestamp >= _releaseTime, "Project: current time is before release time");
+
+        require(_released == false, "Project: already released");
 
         uint256 amount = _token.balanceOf(address(this));
         require(amount > 0, "Project: no tokens to release");
 
         _token.safeTransfer(_beneficiary, amount);
+
+        _released = true;
     }
 }
