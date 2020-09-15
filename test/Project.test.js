@@ -146,6 +146,50 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
                   await this.contract.recover(this.token.address, { from: operator });
                   expect(await this.token.balanceOf(recovery)).to.be.bignumber.equal(amount.sub(this.expectedAmount));
                 });
+
+                describe('if recovered', function () {
+                  it('cannot be unlocked', async function () {
+                    await this.contract.recover(this.token.address, { from: operator });
+                    await expectRevert(
+                      this.contract.unlock({ from: operator }),
+                      'Project: no tokens to unlock',
+                    );
+                  });
+                });
+              });
+            });
+
+            context('check unlock', function () {
+              describe('if not released', function () {
+                it('cannot be unlocked', async function () {
+                  await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
+                  await expectRevert(
+                    this.contract.unlock({ from: operator }),
+                    'Project: not already released',
+                  );
+                });
+              });
+
+              describe('if released', function () {
+                beforeEach(async function () {
+                  await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
+                  await this.contract.release({ from: operator });
+                });
+
+                it('can be unlocked', async function () {
+                  await this.contract.unlock({ from: operator });
+                  expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(amount);
+                });
+
+                describe('if unlocked', function () {
+                  it('cannot be recovered', async function () {
+                    await this.contract.unlock({ from: operator });
+                    await expectRevert(
+                      this.contract.recover(this.token.address, { from: operator }),
+                      'Project: no tokens to recover',
+                    );
+                  });
+                });
               });
             });
           });
@@ -171,6 +215,22 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
                 it('cannot be ever recovered', async function () {
                   await expectRevert(
                     this.contract.recover(this.token.address, { from: thirdParty }),
+                    'Roles: caller does not have the OPERATOR role',
+                  );
+                });
+              });
+            });
+
+            context('check unlock', function () {
+              describe('if released', function () {
+                beforeEach(async function () {
+                  await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
+                  await this.contract.release({ from: operator });
+                });
+
+                it('cannot be ever unlocked', async function () {
+                  await expectRevert(
+                    this.contract.unlock({ from: thirdParty }),
                     'Roles: caller does not have the OPERATOR role',
                   );
                 });

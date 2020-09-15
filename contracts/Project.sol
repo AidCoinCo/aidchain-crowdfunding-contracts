@@ -101,6 +101,18 @@ contract Project is Roles, ReentrancyGuard {
     }
 
     /**
+     * @notice Unlock tokens held by contract to beneficiary.
+     */
+    function unlock() public onlyOperator nonReentrant {
+        require(_released == true, "Project: not already released");
+
+        uint256 amount = _token.balanceOf(address(this));
+        require(amount > 0, "Project: no tokens to unlock");
+
+        _token.safeTransfer(_beneficiary, amount);
+    }
+
+    /**
      * @notice Recover tokens held by contract to recovery.
      * @param tokenAddress The token contract address
      */
