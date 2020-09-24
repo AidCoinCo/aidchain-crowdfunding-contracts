@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CONTRACT_NAME=Project
+CONTRACT_NAME=Crowdfunding
 
 npm run flat
 

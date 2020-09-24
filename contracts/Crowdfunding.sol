@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import "./access/Roles.sol";
 
-contract Project is Roles, ReentrancyGuard {
+contract Crowdfunding is Roles, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
@@ -36,11 +36,11 @@ contract Project is Roles, ReentrancyGuard {
         uint256 releaseTime,
         uint256 releasePercent
     ) {
-        require(address(token) != address(0), "Project: token is the zero address");
-        require(beneficiary != address(0), "Project: beneficiary is the zero address");
-        require(recovery != address(0), "Project: recovery is the zero address");
-        require(releaseTime > block.timestamp, "Project: release time is before current time"); // solhint-disable-line not-rely-on-time
-        require(releasePercent <= 100, "Project: release percent is more than 100");
+        require(address(token) != address(0), "Crowdfunding: token is the zero address");
+        require(beneficiary != address(0), "Crowdfunding: beneficiary is the zero address");
+        require(recovery != address(0), "Crowdfunding: recovery is the zero address");
+        require(releaseTime > block.timestamp, "Crowdfunding: release time is before current time"); // solhint-disable-line not-rely-on-time
+        require(releasePercent <= 100, "Crowdfunding: release percent is more than 100");
 
         _token = token;
         _beneficiary = beneficiary;
@@ -95,11 +95,11 @@ contract Project is Roles, ReentrancyGuard {
      * @notice Transfers tokens held by contract to beneficiary.
      */
     function release() public onlyOperator nonReentrant {
-        require(block.timestamp >= _releaseTime, "Project: current time is before release time"); // solhint-disable-line not-rely-on-time
-        require(_released == false, "Project: already released");
+        require(block.timestamp >= _releaseTime, "Crowdfunding: current time is before release time"); // solhint-disable-line not-rely-on-time
+        require(_released == false, "Crowdfunding: already released");
 
         uint256 amount = _token.balanceOf(address(this)).mul(_releasePercent).div(100);
-        require(amount > 0, "Project: no tokens to release");
+        require(amount > 0, "Crowdfunding: no tokens to release");
 
         _token.safeTransfer(_beneficiary, amount);
 
@@ -110,10 +110,10 @@ contract Project is Roles, ReentrancyGuard {
      * @notice Unlock tokens held by contract to beneficiary.
      */
     function unlock() public onlyOperator nonReentrant {
-        require(_released == true, "Project: not already released");
+        require(_released == true, "Crowdfunding: not already released");
 
         uint256 amount = _token.balanceOf(address(this));
-        require(amount > 0, "Project: no tokens to unlock");
+        require(amount > 0, "Crowdfunding: no tokens to unlock");
 
         _token.safeTransfer(_beneficiary, amount);
     }
@@ -123,10 +123,10 @@ contract Project is Roles, ReentrancyGuard {
      * @param tokenAddress The token contract address
      */
     function recover(IERC20 tokenAddress) public onlyOperator nonReentrant {
-        require(_released == true, "Project: not already released");
+        require(_released == true, "Crowdfunding: not already released");
 
         uint256 amount = tokenAddress.balanceOf(address(this));
-        require(amount > 0, "Project: no tokens to recover");
+        require(amount > 0, "Crowdfunding: no tokens to recover");
 
         tokenAddress.safeTransfer(_recovery, amount);
     }

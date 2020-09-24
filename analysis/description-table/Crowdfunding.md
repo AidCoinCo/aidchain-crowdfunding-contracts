@@ -5,7 +5,7 @@
 
 |  File Name  |  SHA-1 Hash  |
 |-------------|--------------|
-| dist/Project.dist.sol | bd9d38edaa01442614d9488c839fe630846eafbf |
+| dist/Crowdfunding.dist.sol | fff575db05f7d0cdc2dcde5396c44ca449bc2c89 |
 
 
 ### Contracts Description Table
@@ -90,12 +90,13 @@
 | **Roles** | Implementation | AccessControl |||
 | └ | <Constructor> | Public ❗️ | 🛑  |NO❗️ |
 ||||||
-| **Project** | Implementation | Roles, ReentrancyGuard |||
+| **Crowdfunding** | Implementation | Roles, ReentrancyGuard |||
 | └ | <Constructor> | Public ❗️ | 🛑  |NO❗️ |
 | └ | token | Public ❗️ |   |NO❗️ |
 | └ | beneficiary | Public ❗️ |   |NO❗️ |
 | └ | recovery | Public ❗️ |   |NO❗️ |
 | └ | releaseTime | Public ❗️ |   |NO❗️ |
+| └ | releasePercent | Public ❗️ |   |NO❗️ |
 | └ | released | Public ❗️ |   |NO❗️ |
 | └ | release | Public ❗️ | 🛑  | onlyOperator nonReentrant |
 | └ | unlock | Public ❗️ | 🛑  | onlyOperator nonReentrant |

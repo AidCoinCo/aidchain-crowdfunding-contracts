@@ -1,11 +1,11 @@
-# AidChain Projects Smart Contracts
+# AidChain Crowdfunding Smart Contracts
 
-[![Build Status](https://travis-ci.org/AidCoinCo/aidchain-projects-contracts.svg?branch=master)](https://travis-ci.org/AidCoinCo/aidchain-projects-contracts)
-[![Coverage Status](https://coveralls.io/repos/github/AidCoinCo/aidchain-projects-contracts/badge.svg)](https://coveralls.io/github/AidCoinCo/aidchain-projects-contracts)
-[![MIT licensed](https://img.shields.io/github/license/AidCoinCo/aidchain-projects-contracts.svg)](https://github.com/AidCoinCo/aidchain-projects-contracts/blob/master/LICENSE)
+[![Build Status](https://travis-ci.com/AidCoinCo/aidchain-crowdfunding-contracts.svg?branch=master)](https://travis-ci.com/AidCoinCo/aidchain-crowdfunding-contracts)
+[![Coverage Status](https://coveralls.io/repos/github/AidCoinCo/aidchain-crowdfunding-contracts/badge.svg)](https://coveralls.io/github/AidCoinCo/aidchain-crowdfunding-contracts)
+[![MIT licensed](https://img.shields.io/github/license/AidCoinCo/aidchain-crowdfunding-contracts.svg)](https://github.com/AidCoinCo/aidchain-crowdfunding-contracts/blob/master/LICENSE)
 
 
-AidChain Projects Smart Contracts
+AidChain Crowdfunding Smart Contracts
 
 
 ## Development
@@ -111,7 +111,7 @@ Note: it is better to analyze the flattened code to have a bigger overview on th
 The `describe` command shows a summary of the contracts and methods in the files provided
 
 ```bash
-surya describe dist/Project.dist.sol
+surya describe dist/Crowdfunding.dist.sol
 ```
 
 ### Dependencies
@@ -119,7 +119,7 @@ surya describe dist/Project.dist.sol
 The `dependencies` command outputs the c3-linearization of a given contract's inheirtance graph. Contracts will be listed starting with most-derived, ie. if the same function is defined in more than one contract, the solidity compiler will use the definition in whichever contract is listed first.
 
 ```bash
-surya dependencies Project dist/Project.dist.sol
+surya dependencies Crowdfunding dist/Crowdfunding.dist.sol
 ```
 ### Generate Report
 
@@ -139,4 +139,4 @@ The `sol2uml` generates UML class diagram from Solidity contracts.
 
 ## License
 
-Code released under the [MIT License](https://github.com/AidCoinCo/aidchain-projects-contracts/blob/master/LICENSE).
+Code released under the [MIT License](https://github.com/AidCoinCo/aidchain-crowdfunding-contracts/blob/master/LICENSE).

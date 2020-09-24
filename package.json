@@ -1,7 +1,7 @@
 {
-  "name": "aidchain-projects-contracts",
+  "name": "aidchain-crowdfunding-contracts",
   "version": "1.0.0",
-  "description": "AidChain Projects Smart Contracts",
+  "description": "AidChain Crowdfunding Smart Contracts",
   "files": [
     "contracts",
     "test"
@@ -37,11 +37,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AidCoinCo/aidchain-projects-contracts.git"
+    "url": "https://github.com/AidCoinCo/aidchain-crowdfunding-contracts.git"
   },
-  "homepage": "https://github.com/AidCoinCo/aidchain-projects-contracts/",
+  "homepage": "https://github.com/AidCoinCo/aidchain-crowdfunding-contracts/",
   "bugs": {
-    "url": "https://github.com/AidCoinCo/aidchain-projects-contracts/issues"
+    "url": "https://github.com/AidCoinCo/aidchain-crowdfunding-contracts/issues"
   },
   "author": {
     "name": "AIDCoin",

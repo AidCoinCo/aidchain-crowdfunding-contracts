@@ -40,4 +40,4 @@ const App = {
   },
 };
 
-App.load(['Project']);
+App.load(['Crowdfunding']);

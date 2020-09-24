@@ -4,9 +4,9 @@ const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 
 const ERC20Mock = artifacts.require('ERC20Mock');
-const Project = artifacts.require('Project');
+const Crowdfunding = artifacts.require('Crowdfunding');
 
-contract('Project', function ([tokenHolder, admin, operator, beneficiary, recovery, thirdParty]) {
+contract('Crowdfunding', function ([tokenHolder, admin, operator, beneficiary, recovery, thirdParty]) {
   const OPERATOR_ROLE = web3.utils.soliditySha3('OPERATOR');
 
   const name = 'TestToken';
@@ -24,43 +24,43 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
 
     it('rejects an empty token', async function () {
       await expectRevert(
-        Project.new(ZERO_ADDRESS, beneficiary, recovery, this.releaseTime, this.releasePercent),
-        'Project: token is the zero address',
+        Crowdfunding.new(ZERO_ADDRESS, beneficiary, recovery, this.releaseTime, this.releasePercent),
+        'Crowdfunding: token is the zero address',
       );
     });
 
     it('rejects an empty beneficiary', async function () {
       await expectRevert(
-        Project.new(this.token.address, ZERO_ADDRESS, recovery, this.releaseTime, this.releasePercent),
-        'Project: beneficiary is the zero address',
+        Crowdfunding.new(this.token.address, ZERO_ADDRESS, recovery, this.releaseTime, this.releasePercent),
+        'Crowdfunding: beneficiary is the zero address',
       );
     });
 
     it('rejects an empty recovery', async function () {
       await expectRevert(
-        Project.new(this.token.address, beneficiary, ZERO_ADDRESS, this.releaseTime, this.releasePercent),
-        'Project: recovery is the zero address',
+        Crowdfunding.new(this.token.address, beneficiary, ZERO_ADDRESS, this.releaseTime, this.releasePercent),
+        'Crowdfunding: recovery is the zero address',
       );
     });
 
     it('rejects a release time in the past', async function () {
       const pastReleaseTime = (await time.latest()).sub(time.duration.years(1));
       await expectRevert(
-        Project.new(this.token.address, beneficiary, recovery, pastReleaseTime, this.releasePercent),
-        'Project: release time is before current time',
+        Crowdfunding.new(this.token.address, beneficiary, recovery, pastReleaseTime, this.releasePercent),
+        'Crowdfunding: release time is before current time',
       );
     });
 
     it('rejects invalid percent', async function () {
       await expectRevert(
-        Project.new(this.token.address, beneficiary, recovery, this.releaseTime, 200),
-        'Project: release percent is more than 100',
+        Crowdfunding.new(this.token.address, beneficiary, recovery, this.releaseTime, 200),
+        'Crowdfunding: release percent is more than 100',
       );
     });
 
     context('once deployed', function () {
       beforeEach(async function () {
-        this.contract = await Project.new(
+        this.contract = await Crowdfunding.new(
           this.token.address,
           beneficiary,
           recovery,
@@ -91,7 +91,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
             it('cannot be released before time limit', async function () {
               await expectRevert(
                 this.contract.release({ from: operator }),
-                'Project: current time is before release time',
+                'Crowdfunding: current time is before release time',
               );
             });
 
@@ -99,7 +99,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
               await time.increaseTo(this.releaseTime.sub(time.duration.seconds(3)));
               await expectRevert(
                 this.contract.release({ from: operator }),
-                'Project: current time is before release time',
+                'Crowdfunding: current time is before release time',
               );
             });
 
@@ -122,7 +122,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
             it('cannot be released twice', async function () {
               await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
               await this.contract.release({ from: operator });
-              await expectRevert(this.contract.release({ from: operator }), 'Project: already released');
+              await expectRevert(this.contract.release({ from: operator }), 'Crowdfunding: already released');
               expect(await this.token.balanceOf(beneficiary)).to.be.bignumber.equal(this.expectedAmount);
             });
 
@@ -132,7 +132,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
                   await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
                   await expectRevert(
                     this.contract.recover(this.token.address, { from: operator }),
-                    'Project: not already released',
+                    'Crowdfunding: not already released',
                   );
                 });
               });
@@ -153,7 +153,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
                     await this.contract.recover(this.token.address, { from: operator });
                     await expectRevert(
                       this.contract.unlock({ from: operator }),
-                      'Project: no tokens to unlock',
+                      'Crowdfunding: no tokens to unlock',
                     );
                   });
                 });
@@ -166,7 +166,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
                   await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
                   await expectRevert(
                     this.contract.unlock({ from: operator }),
-                    'Project: not already released',
+                    'Crowdfunding: not already released',
                   );
                 });
               });
@@ -187,7 +187,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
                     await this.contract.unlock({ from: operator });
                     await expectRevert(
                       this.contract.recover(this.token.address, { from: operator }),
-                      'Project: no tokens to recover',
+                      'Crowdfunding: no tokens to recover',
                     );
                   });
                 });
@@ -245,7 +245,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
         describe('if caller has the OPERATOR role', function () {
           it('cannot be released', async function () {
             await time.increaseTo(this.releaseTime.add(time.duration.years(1)));
-            await expectRevert(this.contract.release({ from: operator }), 'Project: no tokens to release');
+            await expectRevert(this.contract.release({ from: operator }), 'Crowdfunding: no tokens to release');
           });
         });
       });
