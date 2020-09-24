@@ -77,6 +77,7 @@ contract('Project', function ([tokenHolder, admin, operator, beneficiary, recove
         expect(await this.contract.beneficiary()).to.equal(beneficiary);
         expect(await this.contract.recovery()).to.equal(recovery);
         expect(await this.contract.releaseTime()).to.be.bignumber.equal(this.releaseTime);
+        expect(await this.contract.releasePercent()).to.be.bignumber.equal(this.releasePercent);
         expect(await this.contract.released()).to.be.equal(false);
       });
 

@@ -78,6 +78,13 @@ contract Project is Roles, ReentrancyGuard {
     }
 
     /**
+     * @return percent of funds to be released first.
+     */
+    function releasePercent() public view returns (uint256) {
+        return _releasePercent;
+    }
+
+    /**
      * @return the release status.
      */
     function released() public view returns (bool) {
