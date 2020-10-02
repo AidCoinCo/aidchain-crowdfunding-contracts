@@ -5,7 +5,7 @@
 
 |  File Name  |  SHA-1 Hash  |
 |-------------|--------------|
-| dist/Crowdfunding.dist.sol | fff575db05f7d0cdc2dcde5396c44ca449bc2c89 |
+| dist/Crowdfunding.dist.sol | b2b9675319ba16923dd22466bb4057abe556bac8 |
 
 
 ### Contracts Description Table
