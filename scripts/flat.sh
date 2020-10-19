@@ -2,4 +2,4 @@
 
 CONTRACT_NAME=Crowdfunding
 
-truffle-flattener contracts/$CONTRACT_NAME.sol > dist/$CONTRACT_NAME.dist.sol
+npx truffle-flattener contracts/$CONTRACT_NAME.sol > dist/$CONTRACT_NAME.dist.sol

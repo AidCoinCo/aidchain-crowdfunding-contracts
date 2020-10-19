@@ -1022,7 +1022,7 @@ abstract contract AccessControl is Context {
 
 
 
-pragma solidity ^0.7.2;
+pragma solidity ^0.7.4;
 
 
 contract Roles is AccessControl {
@@ -1044,7 +1044,7 @@ contract Roles is AccessControl {
 
 
 
-pragma solidity ^0.7.2;
+pragma solidity ^0.7.4;
 
 
 
